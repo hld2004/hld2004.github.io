@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>puzzle</title>
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        .box {
+            border: 1px solid #cfcfcf;
+            margin: 0 auto;
+            width: 322px;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .fun {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        td {
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            background-color: #f1c385;
+            user-select: none;
+        }
+
+        .current {
+            background-color: #fff !important;
+            transition: all .3s;
+        }
+
+        #error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h1>puzzle</h1>
+    <p><strong>规则：</strong>移动方块依次出现1、2、3、4、5、6、7、8、9就可通关</p>
+    <hr/>
+    <div class="fun">
+        <div><span>计次：</span><span id="num">0</span></div>
+        <div><span>提示：</span><span id="error"></span></div>
+        <div><span>功能：</span><button id="reset">重开</button></div>
+    </div>
+    <hr/>
+    <table border="1">
+        <tr>
+            <td id="cell1">1</td>
+            <td id="cell2">2</td>
+            <td id="cell3">3</td>
+        </tr>
+        <tr>
+            <td id="cell4">4</td>
+            <td id="cell5">5</td>
+            <td id="cell6">6</td>
+        </tr>
+        <tr>
+            <td id="cell7">7</td>
+            <td id="cell8">8</td>
+            <td id="cell9" class="current"></td>
+        </tr>
+    </table>
+</div>
+<script>
+    const step = document.getElementById('num');
+    const error = document.getElementById('error');
+    const cells = document.querySelectorAll('td');
+    const seed = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    // 随机数组
+    const shuffle = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // 初始化游戏
+    const initializeGame = () => {
+        const shuffledSeed = shuffle(seed);
+        cells.forEach((cell, index) => {
+            if (shuffledSeed[index] !== 9) {
+                cell.innerText = shuffledSeed[index];
+            } else {
+                cell.classList.add('current');
+            }
+        });
+    };
+
+    // 检查结果
+    const check = () => {
+        let flag = true;
+        cells.forEach((cell, index) => {
+            if (index + 1 !== parseInt(cell.innerText)) {
+                flag = false;
+            }
+        });
+        if (flag) {
+            error.innerText = 'Congratulations!👌';
+        }
+    }
+
+    // 重置游戏
+    const resetGame = () => {
+        error.innerText = '';
+        step.innerText = '0';
+        initializeGame();
+    }
+
+    initializeGame();
+
+    // 监听格子点击事件
+    cells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            const currentCellIndex = Array.from(cells).findIndex(td => td.classList.contains('current'));
+            const clickedCellIndex = Array.from(cells).indexOf(cell);
+            const adjacentCells = [currentCellIndex - 3, currentCellIndex + 3, currentCellIndex - 1, currentCellIndex + 1];
+
+            if (adjacentCells.includes(clickedCellIndex)) {
+                cells[currentCellIndex].innerText = cell.innerText;
+                cell.innerText = '';
+                cells[currentCellIndex].classList.remove('current');
+                cell.classList.add('current');
+                step.innerText = parseInt(step.innerText) + 1;
+                check();
+            } else {
+                error.innerText = '不能移动到该位置！';
+            }
+        });
+    });
+
+    // 监听重置按钮点击事件
+    document.getElementById('reset').addEventListener('click', resetGame);
+</script>
+</body>
+</html>
+
